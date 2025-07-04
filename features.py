@@ -68,8 +68,9 @@ def bessel_basis(n, k):
 
 
 def sph_harm_prefactor(k, m):
-    return ((2 * k + 1) * np.math.factorial(k - abs(m)) /
-            (4 * np.pi * np.math.factorial(k + abs(m))))**0.5
+    from scipy.special import factorial
+    return ((2 * k + 1) * factorial(k - abs(m)) /
+            (4 * np.pi * factorial(k + abs(m))))**0.5
 
 
 def associated_legendre_polynomials(k, zero_m_only=True):

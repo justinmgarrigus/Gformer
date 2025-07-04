@@ -105,7 +105,7 @@ def load_pyg_graphs(
             use_lattice=use_lattice,
             use_angle=use_angle,
         )
-
+    
     graphs = df["atoms"].progress_apply(atoms_to_graph).values
 
     return graphs
@@ -341,8 +341,8 @@ def get_train_val_loaders(
     use_lattice=False,
     use_angle=False,
     use_save=True,
-    # mp_id_list=None,
-    mp_id_list='shear',
+    mp_id_list=None,
+    # mp_id_list='shear',
     # mp_id_list='bulk',
 
 ):
@@ -457,8 +457,8 @@ def get_train_val_loaders(
                         )
                 dat.append(i)
                 all_targets.append(i[target])
-
     
+    mp_id_list = None 
     if mp_id_list is not None:
         if mp_id_list == 'bulk':
             print('using mp bulk dataset')
