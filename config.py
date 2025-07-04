@@ -4,12 +4,12 @@
 import subprocess
 from typing import Optional, Union
 import os
-from pydantic import root_validator
+from pydantic import model_validator
 
 # vfrom pydantic import Field, root_validator, validator
-from pydantic.typing import Literal
-from Gformer.utils import BaseSettings
-from Gformer.models.pyg_att import MatformerConfig
+from typing import Literal
+from utils import BaseSettings
+from models.pyg_att import MatformerConfig
 
 # from typing import List
 
@@ -187,13 +187,13 @@ class TrainingConfig(BaseSettings):
     use_angle: bool = False
 
     # model configuration
-    model = MatformerConfig(name="matformer")
+    model: MatformerConfig = MatformerConfig(name="matformer")
     print(model)
-    @root_validator()
+    @model_validator(mode='after')
     def set_input_size(cls, values):
         """Automatically configure node feature dimensionality."""
-        values["model"].atom_input_features = FEATURESET_SIZE[
-            values["atom_features"]
+        values.model.atom_input_features = FEATURESET_SIZE[
+            values.atom_features
         ]
 
         return values

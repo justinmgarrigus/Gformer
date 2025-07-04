@@ -5,13 +5,13 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pydantic.typing import Literal
+from typing import Literal
 from torch import nn
-from matformer.models.utils import RBFExpansion
-from matformer.utils import BaseSettings
-from matformer.features import angle_emb_mp
+from models.utils import RBFExpansion
+from utils import BaseSettings
+from features import angle_emb_mp
 from torch_scatter import scatter
-from matformer.models.transformer import MatformerConv
+from models.transformer import MatformerConv
 
 import torch, numpy as np
 from torch import Tensor

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # import numpy as np
 import time
-from Gformer.train import train_dgl
+from train import train_dgl
 
 # from sklearn.metrics import mean_absolute_error
 plt.switch_backend("agg")
@@ -127,13 +127,13 @@ def train_prop_model(
         # config["learning_rate"] = 0.001
         # config["epochs"] = 300
 
-    if dataset == "mp_3d_2020":
+    elif dataset == "mp_3d_2020":
         config["id_tag"] = "id"
         config["num_workers"] = 0
-    if dataset == "megnet2":
+    elif dataset == "megnet2":
         config["id_tag"] = "id"
         config["num_workers"] = 0
-    if dataset == "megnet":
+    elif dataset == "megnet":
         config["id_tag"] = "id"
         if prop == "e_form" or prop == "gap pbe":
             config["n_train"] = 60000
@@ -146,19 +146,19 @@ def train_prop_model(
             config["n_train"] = 4664
             config["n_val"] = 393
             config["n_test"] = 393
-    if dataset == "oqmd_3d_no_cfid":
+    elif dataset == "oqmd_3d_no_cfid":
         config["id_tag"] = "_oqmd_entry_id"
         config["num_workers"] = 0
-    if dataset == "hmof" and prop == "co2_absp":
+    elif dataset == "hmof" and prop == "co2_absp":
         config["model"]["output_features"] = 5
-    if dataset == "edos_pdos":
+    elif dataset == "edos_pdos":
         if prop == "edos_up":
             config["model"]["output_features"] = 300
         elif prop == "pdos_elast":
             config["model"]["output_features"] = 200
         else:
             raise ValueError("Target not available.")
-    if dataset == "qm9_std_jctc":
+    elif dataset == "qm9_std_jctc":
         config["id_tag"] = "id"
         config["n_train"] = 110000
         config["n_val"] = 10000
@@ -168,7 +168,7 @@ def train_prop_model(
         config["cutoff"] = 5.0
         config["standard_scalar_and_pca"] = False
 
-    if dataset == "qm9_dgl":
+    elif dataset == "qm9_dgl":
         config["id_tag"] = "id"
         config["n_train"] = 110000
         config["n_val"] = 10000
@@ -181,9 +181,9 @@ def train_prop_model(
 
         # config["max_neighbors"] = 9
 
-    if dataset == "hpov":
+    elif dataset == "hpov":
         config["id_tag"] = "id"
-    if dataset == "qm9":
+    elif dataset == "qm9":
         config["id_tag"] = "id"
         config["n_train"] = 110000
         config["n_val"] = 10000
@@ -217,3 +217,9 @@ def train_prop_model(
         print()
         print()
         print()
+
+
+if __name__ == '__main__':
+    train_prop_model(
+        name='matformer',
+        prop='formation_energy_peratom')

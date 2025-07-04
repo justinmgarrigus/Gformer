@@ -5,14 +5,14 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pydantic.typing import Literal
+from typing import Literal
 from torch import nn
-from matformer.models.utils import RBFExpansion
-from matformer.utils import BaseSettings
-from matformer.features import angle_emb_mp
+from models.utils import RBFExpansion
+from utils import BaseSettings
+from features import angle_emb_mp
 from torch_scatter import scatter
-from matformer.models.transformer import MatformerConv
-from matformer.models.global1 import GATGNN_GIM1_globalATTENTION
+from models.transformer import MatformerConv
+from models.global1 import GATGNN_GIM1_globalATTENTION
 from torch_geometric.data.batch import Batch
 import torch_geometric
 from torch_geometric.nn import (
@@ -47,7 +47,7 @@ class MatformerConfig(BaseSettings):
     use_angle: bool = False
     angle_lattice: bool = False
     classification: bool = False
-    post_fc_count = 1,
+    post_fc_count: Tuple[int] = 1,
 
     class Config:
         """Configure model settings behavior."""

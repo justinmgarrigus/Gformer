@@ -39,10 +39,10 @@ import numpy as np
 from ignite.handlers import Checkpoint, DiskSaver, TerminateOnNan
 from ignite.metrics import Loss, MeanAbsoluteError
 from torch import nn
-from matformer import models
-from matformer.data import get_train_val_loaders
-from matformer.config import TrainingConfig
-from matformer.models.pyg_att import Matformer
+import models
+from data import get_train_val_loaders
+from config import TrainingConfig
+from models.pyg_att import Matformer
 
 from jarvis.db.jsonutils import dumpjson
 import json
@@ -132,11 +132,7 @@ def train_dgl(
     """
     print(config)
     if type(config) is dict:
-        try:
-            config = TrainingConfig(**config)
-        except Exception as exp:
-            print("Check", exp)
-            print('error in converting to training config!')
+        config = TrainingConfig(**config)
     import os
     
     if not os.path.exists(config.output_dir):

@@ -1,6 +1,5 @@
 """Implementation based on the template of ALIGNN."""
 
-import imp
 import random
 from pathlib import Path
 from typing import Optional
@@ -12,9 +11,9 @@ import torch
 import numpy as np
 import pandas as pd
 from jarvis.core.atoms import Atoms
-from Gformer.graphs import PygGraph, PygStructureDataset
+from graphs import PygGraph, PygStructureDataset
 #
-from figshare import data as jdata
+from jarvis.db.figshare import data as jdata
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import math
