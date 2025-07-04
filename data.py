@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from jarvis.core.atoms import Atoms
 from graphs import PygGraph, PygStructureDataset
+
 #
 from jarvis.db.figshare import data as jdata
 from torch.utils.data import DataLoader
@@ -30,6 +31,8 @@ tqdm.pandas()
 device = "cpu"
 if torch.cuda.is_available():
     device = torch.device("cuda")
+
+
 def load_dataset(
     name: str = "dft_3d",
     target=None,
@@ -65,7 +68,6 @@ def mean_absolute_deviation(data, axis=None):
     return np.mean(np.absolute(data - np.mean(data, axis)), axis)
 
 
-
 def load_pyg_graphs(
     df: pd.DataFrame,
     name: str = "dft_3d",
@@ -76,7 +78,7 @@ def load_pyg_graphs(
     use_canonize: bool = False,
     use_lattice: bool = False,
     use_angle: bool = False,
-    device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 ):
     """Construct crystal graphs.
 
@@ -105,7 +107,7 @@ def load_pyg_graphs(
             use_lattice=use_lattice,
             use_angle=use_angle,
         )
-    
+
     graphs = df["atoms"].progress_apply(atoms_to_graph).values
 
     return graphs
@@ -123,11 +125,7 @@ def get_id_train_val_test(
     keep_data_order=False,
 ):
     """Get train, val, test IDs."""
-    if (
-        train_ratio is None
-        and val_ratio is not None
-        and test_ratio is not None
-    ):
+    if train_ratio is None and val_ratio is not None and test_ratio is not None:
         if train_ratio is None:
             assert val_ratio + test_ratio < 1
             train_ratio = 1 - val_ratio - test_ratio
@@ -210,6 +208,7 @@ def get_torch_dataset(
     )
     return data
 
+
 def get_pyg_dataset(
     dataset=[],
     id_tag="jid",
@@ -226,22 +225,24 @@ def get_pyg_dataset(
     tmp_name="dataset",
     use_lattice=False,
     use_angle=False,
-    data_from='Jarvis',
+    data_from="Jarvis",
     use_save=False,
     mean_train=None,
     std_train=None,
-    now=False, # for test
+    now=False,  # for test
 ):
     """Get pyg Dataset."""
     df = pd.DataFrame(dataset)
     # print("df", df)
     # neighbor_strategy = "pairwise-k-nearest"
-    
+
     vals = df[target].values
     if target == "shear modulus" or target == "bulk modulus":
         val_list = [vals[i].item() for i in range(len(vals))]
         vals = val_list
-    output_dir = "./saved_data/" + tmp_name + "test_graph_angle.pkl" # for fast test use
+    output_dir = (
+        "./saved_data/" + tmp_name + "test_graph_angle.pkl"
+    )  # for fast test use
     print("data range", np.max(vals), np.min(vals))
     print(output_dir)
     if now:
@@ -256,15 +257,15 @@ def get_pyg_dataset(
                 use_lattice=use_lattice,
                 use_angle=use_angle,
             )
-            with open(output_dir, 'wb') as pf:
+            with open(output_dir, "wb") as pf:
                 pk.dump(graphs, pf)
-            print('save graphs to ', output_dir)
+            print("save graphs to ", output_dir)
         else:
-            print('loading graphs from ', output_dir)
-            with open(output_dir, 'rb') as pf:
+            print("loading graphs from ", output_dir)
+            with open(output_dir, "rb") as pf:
                 graphs = pk.load(pf)
     else:
-        print('graphs not saved')
+        print("graphs not saved")
         graphs = load_pyg_graphs(
             df,
             name=name,
@@ -344,14 +345,13 @@ def get_train_val_loaders(
     mp_id_list=None,
     # mp_id_list='shear',
     # mp_id_list='bulk',
-
 ):
     """Help function to set up JARVIS train and val dataloaders."""
     # data loading
-    mean_train=None
-    std_train=None
+    mean_train = None
+    std_train = None
     assert (matrix_input and pyg_input) == False
-    
+
     train_sample = filename + "_train.data"
     val_sample = filename + "_val.data"
     test_sample = filename + "_test.data"
@@ -457,27 +457,27 @@ def get_train_val_loaders(
                         )
                 dat.append(i)
                 all_targets.append(i[target])
-    
-    mp_id_list = None 
+
+    mp_id_list = None
     if mp_id_list is not None:
-        if mp_id_list == 'bulk':
-            print('using mp bulk dataset')
-            with open('/home/code/000data/bulk/bulk_megnet_train.pkl', 'rb') as f:
+        if mp_id_list == "bulk":
+            print("using mp bulk dataset")
+            with open("/home/code/000data/bulk/bulk_megnet_train.pkl", "rb") as f:
                 dataset_train = pk.load(f)
-            with open('/home/code/000data/bulk/bulk_megnet_val.pkl', 'rb') as f:
+            with open("/home/code/000data/bulk/bulk_megnet_val.pkl", "rb") as f:
                 dataset_val = pk.load(f)
-            with open('/home/code/000data/bulk/bulk_megnet_test.pkl', 'rb') as f:
+            with open("/home/code/000data/bulk/bulk_megnet_test.pkl", "rb") as f:
                 dataset_test = pk.load(f)
                 # all_dataset = dataset_train + dataset_val + dataset_test
                 # print("all_dataset的长度为:", len(all_dataset))
-        
-        if mp_id_list == 'shear':
-            print('using mp shear dataset')
-            with open('/home/code/000data/shear/shear_megnet_train.pkl', 'rb') as f:
+
+        if mp_id_list == "shear":
+            print("using mp shear dataset")
+            with open("/home/code/000data/shear/shear_megnet_train.pkl", "rb") as f:
                 dataset_train = pk.load(f)
-            with open('/home/code/000data/shear/shear_megnet_val.pkl', 'rb') as f:
+            with open("/home/code/000data/shear/shear_megnet_val.pkl", "rb") as f:
                 dataset_val = pk.load(f)
-            with open('/home/code/000data/shear/shear_megnet_test.pkl', 'rb') as f:
+            with open("/home/code/000data/shear/shear_megnet_test.pkl", "rb") as f:
                 dataset_test = pk.load(f)
                 # all_dataset = dataset_train + dataset_val + dataset_test
                 # print("all_dataset的长度为:", len(all_dataset))
@@ -525,7 +525,7 @@ def get_train_val_loaders(
         except Exception as exp:
             print(exp)
             pass
-        
+
         pk.dump(sc, open(os.path.join(output_dir, "sc.pkl"), "wb"))
 
     if classification_threshold is None:
@@ -539,11 +539,7 @@ def get_train_val_loaders(
                 f = open(os.path.join(output_dir, "mad"), "w")
                 line = "MAX val:" + str(max(all_targets)) + "\n"
                 line += "MIN val:" + str(min(all_targets)) + "\n"
-                line += (
-                    "MAD val:"
-                    + str(mean_absolute_deviation(all_targets))
-                    + "\n"
-                )
+                line += "MAD val:" + str(mean_absolute_deviation(all_targets)) + "\n"
                 f.write(line)
                 f.close()
             except Exception as exp:
@@ -559,7 +555,7 @@ def get_train_val_loaders(
         except Exception as exp:
             print("Data error", exp)
             pass
-    
+
     train_data, mean_train, std_train = get_pyg_dataset(
         dataset=dataset_train,
         id_tag=id_tag,
@@ -578,7 +574,7 @@ def get_train_val_loaders(
         use_angle=use_angle,
         use_save=False,
     )
-    val_data,_,_ = get_pyg_dataset(
+    val_data, _, _ = get_pyg_dataset(
         dataset=dataset_val,
         id_tag=id_tag,
         atom_features=atom_features,
@@ -598,7 +594,7 @@ def get_train_val_loaders(
         mean_train=mean_train,
         std_train=std_train,
     )
-    test_data,_,_ = get_pyg_dataset(
+    test_data, _, _ = get_pyg_dataset(
         dataset=dataset_test,
         id_tag=id_tag,
         atom_features=atom_features,
@@ -696,15 +692,13 @@ def get_train_val_loaders(
         torch.save(train_loader, train_sample)
         torch.save(val_loader, val_sample)
         torch.save(test_loader, test_sample)
-    
+
     print("n_train:", len(train_loader.dataset))
     print("n_val:", len(val_loader.dataset))
     print("n_test:", len(test_loader.dataset))
     print("n_train1:", len(train_loader1.dataset))
 
-
     # print("n_all:", len(all_loader.dataset))
-
 
     return (
         train_loader,
@@ -716,4 +710,3 @@ def get_train_val_loaders(
         mean_train,
         std_train,
     )
-    

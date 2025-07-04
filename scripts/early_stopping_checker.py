@@ -1,4 +1,5 @@
 """Module to analyze early stopping."""
+
 from jarvis.db.jsonutils import loadjson
 import glob
 

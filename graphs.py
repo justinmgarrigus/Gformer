@@ -1,4 +1,5 @@
 """Module to generate networkx graphs."""
+
 """Implementation based on the template of ALIGNN."""
 from multiprocessing.context import ForkContext
 from re import X
@@ -36,19 +37,19 @@ class PygStructureDataset(torch.utils.data.Dataset):
     """Dataset of crystal DGLGraphs."""
 
     def __init__(
-            self,
-            df: pd.DataFrame,
-            graphs: Sequence[Data],
-            target: str,
-            atom_features="atomic_number",
-            transform=None,
-            line_graph=False,
-            classification=False,
-            id_tag="jid",
-            neighbor_strategy="",
-            lineControl=False,
-            mean_train=None,
-            std_train=None,
+        self,
+        df: pd.DataFrame,
+        graphs: Sequence[Data],
+        target: str,
+        atom_features="atomic_number",
+        transform=None,
+        line_graph=False,
+        classification=False,
+        id_tag="jid",
+        neighbor_strategy="",
+        lineControl=False,
+        mean_train=None,
+        std_train=None,
     ):
         """Pytorch Dataset for atomistic graphs.
 
@@ -62,19 +63,22 @@ class PygStructureDataset(torch.utils.data.Dataset):
         self.line_graph = line_graph
 
         self.ids = self.df[id_tag]
-        self.atoms = self.df['atoms']
-        self.labels = torch.tensor(self.df[target]).type(
-            torch.get_default_dtype()
-        )
+        self.atoms = self.df["atoms"]
+        self.labels = torch.tensor(self.df[target]).type(torch.get_default_dtype())
         print("mean %f std %f" % (self.labels.mean(), self.labels.std()))
         if mean_train == None:
             mean = self.labels.mean()
             std = self.labels.std()
             self.labels = (self.labels - mean) / std
-            print("normalize using training mean but shall not be used here %f and std %f" % (mean, std))
+            print(
+                "normalize using training mean but shall not be used here %f and std %f"
+                % (mean, std)
+            )
         else:
             self.labels = (self.labels - mean_train) / std_train
-            print("normalize using training mean %f and std %f" % (mean_train, std_train))
+            print(
+                "normalize using training mean %f and std %f" % (mean_train, std_train)
+            )
 
         self.transform = transform
 
@@ -91,7 +95,6 @@ class PygStructureDataset(torch.utils.data.Dataset):
             gatgnn_glob_feat = create_global_feat(atoms_index)
 
             gatgnn_glob_feat = np.repeat(gatgnn_glob_feat, atoms_index.size, axis=0)
-
 
             g.glob_feat = torch.Tensor(gatgnn_glob_feat).float()
 
@@ -111,7 +114,12 @@ class PygStructureDataset(torch.utils.data.Dataset):
                 for g in tqdm(graphs):
                     linegraph_trans = LineGraph(force_directed=True)
                     g_new = Data()
-                    g_new.x, g_new.edge_index, g_new.edge_attr, g_new.glob_feat = g.x, g.edge_index, g.edge_attr, g.glob_feat
+                    g_new.x, g_new.edge_index, g_new.edge_attr, g_new.glob_feat = (
+                        g.x,
+                        g.edge_index,
+                        g.edge_attr,
+                        g.glob_feat,
+                    )
                     try:
                         lg = linegraph_trans(g)
                     except Exception as exp:
@@ -139,7 +147,9 @@ class PygStructureDataset(torch.utils.data.Dataset):
                             filter_out += 1
                         idx_t += 1
                     print(
-                        "filter out %d samples because of exceeding threshold of 200 for nn based method" % filter_out)
+                        "filter out %d samples because of exceeding threshold of 200 for nn based method"
+                        % filter_out
+                    )
                     print("dataset max atom number %d" % max_size)
                     self.line_graphs = self.graphs
                     self.labels = labels
@@ -195,19 +205,11 @@ class PygStructureDataset(torch.utils.data.Dataset):
 
     def setup_standardizer(self, ids):
         """Atom-wise feature standardization transform."""
-        x = torch.cat(
-            [
-                g.x
-                for idx, g in enumerate(self.graphs)
-                if idx in ids
-            ]
-        )
+        x = torch.cat([g.x for idx, g in enumerate(self.graphs) if idx in ids])
         self.atom_feature_mean = x.mean(0)
         self.atom_feature_std = x.std(0)
 
-        self.transform = PygStandardize(
-            self.atom_feature_mean, self.atom_feature_std
-        )
+        self.transform = PygStandardize(self.atom_feature_mean, self.atom_feature_std)
 
     @staticmethod
     def collate(samples: List[Tuple[Data, torch.Tensor]]):
@@ -218,23 +220,33 @@ class PygStructureDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def collate_line_graph(
-            samples: List[Tuple[Data, Data, torch.Tensor, torch.Tensor]]
+        samples: List[Tuple[Data, Data, torch.Tensor, torch.Tensor]],
     ):
         """Dataloader helper to batch graphs cross `samples`."""
         graphs, line_graphs, lattice, labels = map(list, zip(*samples))
         batched_graph = Batch.from_data_list(graphs)
         batched_line_graph = Batch.from_data_list(line_graphs)
         if len(labels[0].size()) > 0:
-            return batched_graph, batched_line_graph, torch.cat([i.unsqueeze(0) for i in lattice]), torch.stack(labels)
+            return (
+                batched_graph,
+                batched_line_graph,
+                torch.cat([i.unsqueeze(0) for i in lattice]),
+                torch.stack(labels),
+            )
         else:
-            return batched_graph, batched_line_graph, torch.cat([i.unsqueeze(0) for i in lattice]), torch.tensor(labels)
+            return (
+                batched_graph,
+                batched_line_graph,
+                torch.cat([i.unsqueeze(0) for i in lattice]),
+                torch.tensor(labels),
+            )
 
 
 def canonize_edge(
-        src_id,
-        dst_id,
-        src_image,
-        dst_image,
+    src_id,
+    dst_id,
+    src_image,
+    dst_image,
 ):
     """Compute canonical edge representation.
 
@@ -258,13 +270,13 @@ def canonize_edge(
 
 
 def nearest_neighbor_edges_submit(
-        atoms=None,
-        cutoff=8,
-        max_neighbors=12,
-        id=None,
-        use_canonize=False,
-        use_lattice=False,
-        use_angle=False,
+    atoms=None,
+    cutoff=8,
+    max_neighbors=12,
+    id=None,
+    use_canonize=False,
+    use_lattice=False,
+    use_angle=False,
 ):
     """Construct k-NN edge list."""
     # returns List[List[Tuple[site, distance, index, image]]]
@@ -323,15 +335,16 @@ def nearest_neighbor_edges_submit(
 
 
 def pair_nearest_neighbor_edges(
-        atoms=None,
-        pair_wise_distances=6,
-        use_lattice=False,
-        use_angle=False,
+    atoms=None,
+    pair_wise_distances=6,
+    use_lattice=False,
+    use_angle=False,
 ):
     """Construct pairwise k-fully connected edge list."""
     smallest = pair_wise_distances
     lattice_list = torch.as_tensor(
-        [[0, 0, 1], [0, 1, 0], [1, 0, 0], [1, 1, 0], [1, 0, 1], [0, 1, 1]]).float()
+        [[0, 0, 1], [0, 1, 0], [1, 0, 0], [1, 1, 0], [1, 0, 1], [0, 1, 1]]
+    ).float()
 
     lattice = torch.as_tensor(atoms.lattice_mat).float()
     pos = torch.as_tensor(atoms.cart_coords)
@@ -341,17 +354,30 @@ def pair_nearest_neighbor_edges(
     r_a = (np.floor(radius_needed / lat.a) + 1).astype(np.int)
     r_b = (np.floor(radius_needed / lat.b) + 1).astype(np.int)
     r_c = (np.floor(radius_needed / lat.c) + 1).astype(np.int)
-    period_list = np.array([l for l in itertools.product(
-        *[list(range(-r_a, r_a + 1)), list(range(-r_b, r_b + 1)), list(range(-r_c, r_c + 1))])])
+    period_list = np.array(
+        [
+            l
+            for l in itertools.product(
+                *[
+                    list(range(-r_a, r_a + 1)),
+                    list(range(-r_b, r_b + 1)),
+                    list(range(-r_c, r_c + 1)),
+                ]
+            )
+        ]
+    )
     period_list = torch.as_tensor(period_list).float()
     n_cells = period_list.size(0)
     offset = torch.matmul(period_list, lattice).view(n_cells, 1, 3)
-    expand_pos = (pos.unsqueeze(0).expand(n_cells, -1, -1) + offset).transpose(0, 1).contiguous()
-    dist = (pos.unsqueeze(1).unsqueeze(1) - expand_pos.unsqueeze(
-        0))  # [n, 1, 1, 3] - [1, n, n_cell, 3] -> [n, n, n_cell, 3]
+    expand_pos = (
+        (pos.unsqueeze(0).expand(n_cells, -1, -1) + offset).transpose(0, 1).contiguous()
+    )
+    dist = pos.unsqueeze(1).unsqueeze(1) - expand_pos.unsqueeze(
+        0
+    )  # [n, 1, 1, 3] - [1, n, n_cell, 3] -> [n, n, n_cell, 3]
     dist2, index = torch.sort(dist.norm(dim=-1), dim=-1, stable=True)
     max_value = dist2[:, :, smallest - 1]  # [n, n]
-    mask = (dist.norm(dim=-1) <= max_value.unsqueeze(-1))  # [n, n, n_cell]
+    mask = dist.norm(dim=-1) <= max_value.unsqueeze(-1)  # [n, n, n_cell]
     shift = torch.matmul(lattice_list, lattice).repeat(atom_num, 1)
     shift_src = torch.arange(atom_num).unsqueeze(-1).repeat(1, lattice_list.size(0))
     shift_src = torch.cat([shift_src[i, :] for i in range(shift_src.size(0))])
@@ -369,8 +395,8 @@ def pair_nearest_neighbor_edges(
 
 
 def build_undirected_edgedata(
-        atoms=None,
-        edges={},
+    atoms=None,
+    edges={},
 ):
     """Build undirected graph data from edge set.
 
@@ -386,9 +412,7 @@ def build_undirected_edgedata(
             # fractional coordinate for periodic image of dst
             dst_coord = atoms.frac_coords[dst_id] + dst_image
             # cartesian displacement vector pointing from src -> dst
-            d = atoms.lattice.cart_coords(
-                dst_coord - atoms.frac_coords[src_id]
-            )
+            d = atoms.lattice.cart_coords(dst_coord - atoms.frac_coords[src_id])
             # if np.linalg.norm(d)!=0:
             # print ('jv',dst_image,d)
             # add edges for both directions
@@ -408,13 +432,13 @@ class PygGraph(object):
     """Generate a graph object."""
 
     def __init__(
-            self,
-            nodes=[],
-            node_attributes=[],
-            edges=[],
-            edge_attributes=[],
-            color_map=None,
-            labels=None,
+        self,
+        nodes=[],
+        node_attributes=[],
+        edges=[],
+        edge_attributes=[],
+        color_map=None,
+        labels=None,
     ):
         """
         Initialize the graph object.
@@ -439,17 +463,17 @@ class PygGraph(object):
 
     @staticmethod
     def atom_dgl_multigraph(
-            atoms=None,
-            neighbor_strategy="k-nearest",
-            cutoff=8.0,
-            max_neighbors=12,
-            atom_features="cgcnn",
-            max_attempts=3,
-            id: Optional[str] = None,
-            compute_line_graph: bool = False,
-            use_canonize: bool = False,
-            use_lattice: bool = False,
-            use_angle: bool = False,
+        atoms=None,
+        neighbor_strategy="k-nearest",
+        cutoff=8.0,
+        max_neighbors=12,
+        atom_features="cgcnn",
+        max_attempts=3,
+        id: Optional[str] = None,
+        compute_line_graph: bool = False,
+        use_canonize: bool = False,
+        use_lattice: bool = False,
+        use_angle: bool = False,
     ):
         edges = nearest_neighbor_edges_submit(
             atoms=atoms,
@@ -468,9 +492,7 @@ class PygGraph(object):
             feat = list(get_node_attributes(s, atom_features=atom_features))
             sps_features.append(feat)
         sps_features = np.array(sps_features)
-        node_features = torch.tensor(sps_features).type(
-            torch.get_default_dtype()
-        )
+        node_features = torch.tensor(sps_features).type(torch.get_default_dtype())
         edge_index = torch.cat((u.unsqueeze(0), v.unsqueeze(0)), dim=0).long()
         # print("node_features", node_features)
         g = Data(x=node_features, edge_index=edge_index, edge_attr=r)
@@ -498,7 +520,7 @@ def pyg_compute_bond_cosines(lg):
     r1 = -x[src]
     r2 = x[dst]
     bond_cosine = torch.sum(r1 * r2, dim=1) / (
-            torch.norm(r1, dim=1) * torch.norm(r2, dim=1)
+        torch.norm(r1, dim=1) * torch.norm(r2, dim=1)
     )
     bond_cosine = torch.clamp(bond_cosine, -1, 1)
     return bond_cosine
@@ -535,7 +557,7 @@ class PygStandardize(torch.nn.Module):
 
 
 def prepare_pyg_batch(
-        batch: Tuple[Data, torch.Tensor], device=None, non_blocking=False
+    batch: Tuple[Data, torch.Tensor], device=None, non_blocking=False
 ):
     """Send batched dgl crystal graph to device."""
     g, t = batch
@@ -548,9 +570,9 @@ def prepare_pyg_batch(
 
 
 def prepare_pyg_line_graph_batch(
-        batch: Tuple[Tuple[Data, Data, torch.Tensor], torch.Tensor],
-        device=None,
-        non_blocking=False,
+    batch: Tuple[Tuple[Data, Data, torch.Tensor], torch.Tensor],
+    device=None,
+    non_blocking=False,
 ):
     """Send line graph batch to device.
 
@@ -567,4 +589,3 @@ def prepare_pyg_line_graph_batch(
     )
 
     return batch
-

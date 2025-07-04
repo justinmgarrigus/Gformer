@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_absolute_error
 from ignite.contrib.handlers import TensorboardLogger
+
 try:
     from ignite.contrib.handlers.stores import EpochOutputStore
 except Exception as exp:
@@ -134,7 +135,7 @@ def train_dgl(
     if type(config) is dict:
         config = TrainingConfig(**config)
     import os
-    
+
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
     checkpoint_dir = os.path.join(config.output_dir)
@@ -147,7 +148,7 @@ def train_dgl(
     f.close()
     global tmp_output_dir
     tmp_output_dir = config.output_dir
-    pprint.pprint(tmp) 
+    pprint.pprint(tmp)
     if config.classification_threshold is not None:
         classification = True
     if config.random_seed is not None:
@@ -207,13 +208,12 @@ def train_dgl(
         test_loader = train_val_test_loaders[2]
         prepare_batch = train_val_test_loaders[3]
 
-
     prepare_batch = partial(prepare_batch, device=device)
     if classification:
         config.model.classification = True
     # define network, optimizer, scheduler
     _model = {
-        "matformer" : Matformer,
+        "matformer": Matformer,
     }
     if std_train is None:
         std_train = 1.0
@@ -240,16 +240,12 @@ def train_dgl(
             dist.destroy_process_group()
 
         setup(2, 2)
-        net = torch.nn.parallel.DistributedDataParallel(
-            net
-        )
+        net = torch.nn.parallel.DistributedDataParallel(net)
     params = group_decay(net)
     optimizer = setup_optimizer(params, config)
 
     if config.scheduler == "none":
-        scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lambda epoch: 1.0
-        )
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: 1.0)
 
     elif config.scheduler == "onecycle":
         steps_per_epoch = len(train_loader)
@@ -274,7 +270,11 @@ def train_dgl(
     }
     criterion = criteria[config.criterion]
     # set up training engine and evaluators
-    metrics = {"loss": Loss(criterion), "mae": MeanAbsoluteError() * std_train, "neg_mae": -1.0 * MeanAbsoluteError() * std_train}
+    metrics = {
+        "loss": Loss(criterion),
+        "mae": MeanAbsoluteError() * std_train,
+        "neg_mae": -1.0 * MeanAbsoluteError() * std_train,
+    }
     trainer = create_supervised_trainer(
         net,
         optimizer,
@@ -296,7 +296,7 @@ def train_dgl(
         device=device,
     )
     if test_only:
-        checkpoint_tmp = torch.load('/your_model_path.pt')
+        checkpoint_tmp = torch.load("/your_model_path.pt")
         to_load = {
             "model": net,
             "optimizer": optimizer,
@@ -308,17 +308,18 @@ def train_dgl(
         targets = []
         predictions = []
         import time
+
         t1 = time.time()
         with torch.no_grad():
             for dat in test_loader:
                 g, lg, _, target = dat
                 try:
                     out_data = net([g.to(device), lg.to(device), _.to(device)])
-                    success_flag=1
-                except: # just in case
-                    print('error for this data')
+                    success_flag = 1
+                except:  # just in case
+                    print("error for this data")
                     print(g)
-                    success_flag=0
+                    success_flag = 0
                 if success_flag > 0:
                     out_data = out_data.cpu().numpy().tolist()
                     target = target.cpu().numpy().flatten().tolist()
@@ -329,10 +330,11 @@ def train_dgl(
         t2 = time.time()
         f.close()
         from sklearn.metrics import mean_absolute_error
+
         targets = np.array(targets) * std_train
         predictions = np.array(predictions) * std_train
         print("Test MAE:", mean_absolute_error(targets, predictions))
-        print("Total test time:", t2-t1)
+        print("Total test time:", t2 - t1)
         return mean_absolute_error(targets, predictions)
     # ignite event handlers:
     trainer.add_event_handler(Events.EPOCH_COMPLETED, TerminateOnNan())
@@ -363,7 +365,7 @@ def train_dgl(
             to_save,
             DiskSaver(checkpoint_dir, create_dir=True, require_empty=False),
             n_saved=5,
-            filename_prefix='best',
+            filename_prefix="best",
             score_name="neg_mae",
             global_step_transform=lambda *_: trainer.state.epoch,
         )
@@ -421,8 +423,6 @@ def train_dgl(
 
             history["validation"][metric].append(vm)
 
-        
-        
         epoch_num = len(history["validation"][t_metric])
         if epoch_num % 20 == 0:
             train_evaluator.run(train_loader)
@@ -437,8 +437,7 @@ def train_dgl(
                 history["train"][metric].append(tm)
         else:
             tmetrics = {}
-            tmetrics['mae'] = -1
-
+            tmetrics["mae"] = -1
 
         # for metric in metrics.keys():
         #    history["train"][metric].append(tmetrics[metric])
@@ -524,9 +523,7 @@ def train_dgl(
 
                 f.write("%s, %d, %d\n" % (id, (target), (top_class)))
                 targets.append(target)
-                predictions.append(
-                    top_class.cpu().numpy().flatten().tolist()[0]
-                )
+                predictions.append(top_class.cpu().numpy().flatten().tolist()[0])
         f.close()
         from sklearn.metrics import roc_auc_score
 
@@ -562,9 +559,7 @@ def train_dgl(
                 info["predictions"] = out_data
                 mem.append(info)
         dumpjson(
-            filename=os.path.join(
-                config.output_dir, "multi_out_predictions.json"
-            ),
+            filename=os.path.join(config.output_dir, "multi_out_predictions.json"),
             data=mem,
         )
     if (
@@ -583,7 +578,6 @@ def train_dgl(
         targets = []
         predictions = []
 
-
         with torch.no_grad():
             for dat in test_loader:
                 g, lg, _, target = dat
@@ -599,8 +593,6 @@ def train_dgl(
                 predictions.append(out_data)
         f.close()
 
-
-
         from sklearn.metrics import mean_absolute_error
 
         print(
@@ -608,10 +600,4 @@ def train_dgl(
             mean_absolute_error(np.array(targets), np.array(predictions)) * std_train,
         )
 
-
-
-
-
     return history
-
-

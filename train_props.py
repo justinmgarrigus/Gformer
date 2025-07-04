@@ -1,4 +1,5 @@
 """Helper function for high-throughput GNN trainings."""
+
 """Implementation based on the template of ALIGNN."""
 import matplotlib.pyplot as plt
 
@@ -108,7 +109,7 @@ def train_prop_model(
     # config["output_dir"] = '.'
     if output_dir is not None:
         config["output_dir"] = output_dir
-    
+
     if id_tag is not None:
         config["id_tag"] = id_tag
     if train_ratio is not None:
@@ -196,7 +197,9 @@ def train_prop_model(
             config["target_multiplication_factor"] = 27.211386024367243
     if test_only:
         t1 = time.time()
-        result = train_dgl(config, test_only=test_only, use_save=use_save, mp_id_list=mp_id_list)
+        result = train_dgl(
+            config, test_only=test_only, use_save=use_save, mp_id_list=mp_id_list
+        )
         t2 = time.time()
         print("test mae=", result)
         print("Toal time:", t2 - t1)
@@ -207,8 +210,7 @@ def train_prop_model(
         t1 = time.time()
         # result = train_dgl(config, use_save=use_save, mp_id_list=mp_id_list)
         # result = train_dgl(config, use_save=use_save, mp_id_list='bulk')
-        result = train_dgl(config, use_save=use_save, mp_id_list='shear')
-
+        result = train_dgl(config, use_save=use_save, mp_id_list="shear")
 
         t2 = time.time()
         print("train=", result["train"])
@@ -219,7 +221,5 @@ def train_prop_model(
         print()
 
 
-if __name__ == '__main__':
-    train_prop_model(
-        name='matformer',
-        prop='formation_energy_peratom')
+if __name__ == "__main__":
+    train_prop_model(name="matformer", prop="formation_energy_peratom")

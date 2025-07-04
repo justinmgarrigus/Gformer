@@ -1,4 +1,5 @@
 """Shared pydantic settings configuration."""
+
 """Implementation based on the template of ALIGNN."""
 import json
 from pathlib import Path

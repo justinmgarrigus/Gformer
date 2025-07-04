@@ -32,9 +32,9 @@ class _NormBase(Module):
         affine: bool = True,
         track_running_stats: bool = True,
         device=None,
-        dtype=None
+        dtype=None,
     ) -> None:
-        factory_kwargs = {'device': device, 'dtype': dtype}
+        factory_kwargs = {"device": device, "dtype": dtype}
         super(_NormBase, self).__init__()
         self.num_features = num_features
         self.eps = eps
@@ -48,13 +48,22 @@ class _NormBase(Module):
             self.register_parameter("weight", None)
             self.register_parameter("bias", None)
         if self.track_running_stats:
-            self.register_buffer('running_mean', torch.zeros(num_features, **factory_kwargs))
-            self.register_buffer('running_var', torch.ones(num_features, **factory_kwargs))
+            self.register_buffer(
+                "running_mean", torch.zeros(num_features, **factory_kwargs)
+            )
+            self.register_buffer(
+                "running_var", torch.ones(num_features, **factory_kwargs)
+            )
             self.running_mean: Optional[Tensor]
             self.running_var: Optional[Tensor]
-            self.register_buffer('num_batches_tracked',
-                                 torch.tensor(0, dtype=torch.long,
-                                              **{k: v for k, v in factory_kwargs.items() if k != 'dtype'}))
+            self.register_buffer(
+                "num_batches_tracked",
+                torch.tensor(
+                    0,
+                    dtype=torch.long,
+                    **{k: v for k, v in factory_kwargs.items() if k != "dtype"}
+                ),
+            )
             self.num_batches_tracked: Optional[Tensor]
         else:
             self.register_buffer("running_mean", None)
@@ -124,9 +133,9 @@ class _MaskedBatchNorm(_NormBase):
         affine=True,
         track_running_stats=True,
         device=None,
-        dtype=None
+        dtype=None,
     ):
-        factory_kwargs = {'device': device, 'dtype': dtype}
+        factory_kwargs = {"device": device, "dtype": dtype}
         super(_MaskedBatchNorm, self).__init__(
             num_features, eps, momentum, affine, track_running_stats, **factory_kwargs
         )
@@ -166,10 +175,16 @@ class _MaskedBatchNorm(_NormBase):
         """
         result, self.running_mean, self.running_var = batch_norm(
             X=input,
-            running_mean=self.running_mean
-            if not self.training or self.track_running_stats
-            else None,
-            running_var=self.running_var if not self.training or self.track_running_stats else None,
+            running_mean=(
+                self.running_mean
+                if not self.training or self.track_running_stats
+                else None
+            ),
+            running_var=(
+                self.running_var
+                if not self.training or self.track_running_stats
+                else None
+            ),
             weight=self.weight,
             bias=self.bias,
             training=bn_training,
@@ -179,7 +194,10 @@ class _MaskedBatchNorm(_NormBase):
         )
         return result
 
-def batch_norm(X, weight, bias, running_mean, running_var, training, momentum, eps, mask):
+
+def batch_norm(
+    X, weight, bias, running_mean, running_var, training, momentum, eps, mask
+):
     if not training:
         X_hat = (X - running_mean) / torch.sqrt(running_var + eps)
     else:
@@ -192,7 +210,6 @@ def batch_norm(X, weight, bias, running_mean, running_var, training, momentum, e
         running_var = momentum * running_var + (1.0 - momentum) * var
     Y = (weight * X_hat + bias) * mask  # Scale and shift
     return Y, running_mean.data, running_var.data
-
 
 
 class MaskedBatchNorm1d(_MaskedBatchNorm):
@@ -266,4 +283,3 @@ class MaskedBatchNorm1d(_MaskedBatchNorm):
             raise ValueError(
                 "expected 2D or 3D input (got {}D input)".format(input.dim())
             )
-

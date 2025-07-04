@@ -1,4 +1,5 @@
 """Pydantic model for default configuration and validation."""
+
 """Implementation based on the template of ALIGNN."""
 
 import subprocess
@@ -14,9 +15,7 @@ from models.pyg_att import MatformerConfig
 # from typing import List
 
 try:
-    VERSION = (
-        subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-    )
+    VERSION = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
 except Exception as exp:
     VERSION = "NA"
     pass
@@ -135,7 +134,9 @@ class TrainingConfig(BaseSettings):
     ] = "dft_3d"
     target: TARGET_ENUM = "formation_energy_peratom"
     atom_features: Literal["basic", "atomic_number", "cfid", "cgcnn"] = "cgcnn"
-    neighbor_strategy: Literal["k-nearest", "voronoi", "pairwise-k-nearest"] = "k-nearest"
+    neighbor_strategy: Literal["k-nearest", "voronoi", "pairwise-k-nearest"] = (
+        "k-nearest"
+    )
     id_tag: Literal["jid", "id", "_oqmd_entry_id"] = "jid"
 
     # logging configuration
@@ -189,11 +190,10 @@ class TrainingConfig(BaseSettings):
     # model configuration
     model: MatformerConfig = MatformerConfig(name="matformer")
     print(model)
-    @model_validator(mode='after')
+
+    @model_validator(mode="after")
     def set_input_size(cls, values):
         """Automatically configure node feature dimensionality."""
-        values.model.atom_input_features = FEATURESET_SIZE[
-            values.atom_features
-        ]
+        values.model.atom_input_features = FEATURESET_SIZE[values.atom_features]
 
         return values
