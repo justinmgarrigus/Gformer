@@ -4,26 +4,14 @@ from typing import Tuple
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 from typing import Literal
 from torch import nn
 from models.utils import RBFExpansion
 from utils import BaseSettings
 from features import angle_emb_mp
-from torch_scatter import scatter
 from models.transformer import MatformerConv
 from models.global1 import GATGNN_GIM1_globalATTENTION
-from torch_geometric.data.batch import Batch
 import torch_geometric
-from torch_geometric.nn import (
-    Set2Set,
-    global_mean_pool,
-    global_add_pool,
-    global_max_pool,
-    GCNConv,
-    DiffGroupNorm,
-)
-from torch_scatter import scatter_mean, scatter_add, scatter_max, scatter
 
 
 class MatformerConfig(BaseSettings):

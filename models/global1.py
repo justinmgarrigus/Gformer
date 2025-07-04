@@ -1,33 +1,13 @@
 """Implementation based on the template of ALIGNN."""
 
-from typing import Tuple
 
-import numpy as np
 import torch
 import torch.nn.functional as F
-from typing import Literal
-from torch import nn
-from models.utils import RBFExpansion
-from utils import BaseSettings
-from features import angle_emb_mp
-from torch_scatter import scatter
-from models.transformer import MatformerConv
 
-import torch, numpy as np
-from torch import Tensor
-import torch.nn as nn
+import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, BatchNorm1d, Dropout, Parameter
-from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.utils import softmax as tg_softmax
-from torch_geometric.nn.inits import glorot, zeros
-import torch_geometric
 from torch_geometric.nn import (
-    Set2Set,
-    global_mean_pool,
-    global_add_pool,
-    global_max_pool,
-    GCNConv,
     DiffGroupNorm,
 )
 

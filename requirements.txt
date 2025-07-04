@@ -6,6 +6,7 @@ annotated-types==0.7.0
 asttokens==3.0.0
 attr==0.3.2
 attrs==25.3.0
+autoflake==2.3.1
 babel==2.17.0
 black==25.1.0
 Brotli==1.1.0
@@ -97,6 +98,7 @@ pycparser==2.22
 pydantic==2.11.7
 pydantic_core==2.33.2
 pydantic-settings==2.10.1
+pyflakes==3.4.0
 Pygments==2.19.2
 pyignite==0.6.1
 pyOpenSSL==25.1.0
@@ -129,6 +131,8 @@ threadpoolctl==3.6.0
 toolz==1.0.0
 torch==2.7.1
 torch-geometric==2.6.1
+torch_scatter==2.1.2
+torch_sparse==0.6.18
 tqdm==4.67.1
 traitlets==5.14.3
 triton==3.3.1

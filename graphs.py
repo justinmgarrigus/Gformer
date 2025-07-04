@@ -1,8 +1,6 @@
 """Module to generate networkx graphs."""
 
 """Implementation based on the template of ALIGNN."""
-from multiprocessing.context import ForkContext
-from re import X
 import numpy as np
 import pandas as pd
 from jarvis.core.specie import chem_data, get_node_attributes
@@ -21,7 +19,6 @@ try:
     from tqdm import tqdm
 except Exception as exp:
     print("torch/tqdm is not installed.", exp)
-    pass
 
 
 def create_global_feat(atoms_index_arr):
@@ -124,7 +121,6 @@ class PygStructureDataset(torch.utils.data.Dataset):
                         lg = linegraph_trans(g)
                     except Exception as exp:
                         print(g.x, g.edge_attr, exp)
-                        pass
                     lg.edge_attr = pyg_compute_bond_cosines(lg)  # old cosine emb
                     # lg.edge_attr = pyg_compute_bond_angle(lg)
                     self.graphs.append(g_new)

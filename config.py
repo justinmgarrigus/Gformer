@@ -3,7 +3,7 @@
 """Implementation based on the template of ALIGNN."""
 
 import subprocess
-from typing import Optional, Union
+from typing import Optional
 import os
 from pydantic import model_validator
 
@@ -16,9 +16,8 @@ from models.pyg_att import MatformerConfig
 
 try:
     VERSION = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-except Exception as exp:
+except Exception:
     VERSION = "NA"
-    pass
 
 
 FEATURESET_SIZE = {"basic": 11, "atomic_number": 1, "cfid": 438, "cgcnn": 92}

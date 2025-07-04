@@ -6,18 +6,14 @@ from typing import Any, Dict, Union
 
 import ignite
 import torch
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import mean_absolute_error
 from ignite.contrib.handlers import TensorboardLogger
 
 try:
     from ignite.contrib.handlers.stores import EpochOutputStore
-except Exception as exp:
+except Exception:
     from ignite.handlers.stores import EpochOutputStore
 
-    pass
 from ignite.handlers import EarlyStopping
 from ignite.contrib.handlers.tensorboard_logger import (
     global_step_from_engine,
@@ -28,19 +24,11 @@ from ignite.engine import (
     create_supervised_evaluator,
     create_supervised_trainer,
 )
-from ignite.contrib.metrics import ROC_AUC, RocCurve
-from ignite.metrics import (
-    Accuracy,
-    Precision,
-    Recall,
-    ConfusionMatrix,
-)
 import pickle as pk
 import numpy as np
 from ignite.handlers import Checkpoint, DiskSaver, TerminateOnNan
 from ignite.metrics import Loss, MeanAbsoluteError
 from torch import nn
-import models
 from data import get_train_val_loaders
 from config import TrainingConfig
 from models.pyg_att import Matformer
