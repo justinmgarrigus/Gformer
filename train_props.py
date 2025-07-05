@@ -222,4 +222,9 @@ def train_prop_model(
 
 
 if __name__ == "__main__":
-    train_prop_model(name="matformer", prop="formation_energy_peratom")
+    train_prop_model(
+        name="matformer", 
+        dataset="dft_2d", 
+        prop="formation_energy_peratom",
+        batch_size = 16
+    )

@@ -130,6 +130,7 @@ class TrainingConfig(BaseSettings):
     dataset: Literal[
         "dft_3d",
         "megnet",
+        "dft_2d" 
     ] = "dft_3d"
     target: TARGET_ENUM = "formation_energy_peratom"
     atom_features: Literal["basic", "atomic_number", "cfid", "cgcnn"] = "cgcnn"

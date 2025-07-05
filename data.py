@@ -352,6 +352,15 @@ def get_train_val_loaders(
     std_train = None
     assert (matrix_input and pyg_input) == False
 
+    # Load the defect values from the "id_prop.csv" file.
+    fname = "datasets/defect/combined/id_prop.csv"
+    with open(fname, "r") as f:
+        defect_map = { 
+            (p := line.split(','))[0] : float(p[1])
+            for line in f
+        }
+    added_formulas = set() 
+
     train_sample = filename + "_train.data"
     val_sample = filename + "_val.data"
     test_sample = filename + "_test.data"
@@ -455,8 +464,24 @@ def get_train_val_loaders(
                             i[target],
                             type(i[target]),
                         )
+                
+                f = i["formula"] 
+                if f not in defect_map or f in added_formulas:
+                    continue
+                
+                i["formation_energy_peratom"] = defect_map[f]
                 dat.append(i)
                 all_targets.append(i[target])
+                added_formulas.add(f) 
+
+                print(f"{f} ", flush=True, end='') 
+    
+    print()
+    print("Total items:", len(all_targets))
+
+    for formula in defect_map:
+        if formula not in added_formulas:
+            print('Missing:', formula) 
 
     mp_id_list = None
     if mp_id_list is not None:
